@@ -1,3 +1,5 @@
+"""Module to get the most active stocks by day"""
+
 import requests
 import pandas as pd
 import os
@@ -9,6 +11,7 @@ load_dotenv()
 FMP_API_KEY = os.getenv("FMP_API_KEY")
 print(f"API Key loaded: {'Yes' if FMP_API_KEY else 'No'}")
 BASE_URL = f"https://financialmodelingprep.com/stable/most-actives?apikey={FMP_API_KEY}"
+
 
 def fetch_most_active_stocks():
     """Fetch most active stocks"""
@@ -29,7 +32,8 @@ def fetch_most_active_stocks():
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data: {e}")
         return None
-    
+
+
 def process_data(raw_data):
     """Convert raw API response to clean DataFrame"""
     if not raw_data:
@@ -39,6 +43,7 @@ def process_data(raw_data):
     # Add timestamp for when the data was fetched
     df['ingestion_timestamp'] = datetime.now()
     return df
+
 
 def upload_to_bigquery(df, project_id, dataset_id, table_id):
     """Upload DataFrame to BigQuery"""
@@ -51,7 +56,7 @@ def upload_to_bigquery(df, project_id, dataset_id, table_id):
         
         # Configure the load job
         job_config = bigquery.LoadJobConfig(
-            write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
         )
         
         # Upload the DataFrame
@@ -65,6 +70,7 @@ def upload_to_bigquery(df, project_id, dataset_id, table_id):
     except Exception as e:
         print(f"Error uploading to BigQuery: {e}")
         return False
+
 
 if __name__=="__main__":
     print(f"Fetching data for most active stocks...")

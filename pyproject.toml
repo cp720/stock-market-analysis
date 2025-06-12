@@ -23,7 +23,7 @@ classifiers = [
 dependencies = [
   "requests>=2.28",
   "pandas>=1.5",
-  "fmp_python==1.0.0",
+  "fmp_python==0.1.5",
   "python-dotenv>=1.0",
   "google-cloud-bigquery>=3.6",
   "google-auth-oauthlib>=0.7.0",
