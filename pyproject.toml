@@ -30,13 +30,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-warehouse = [
-  "snowflake-connector-python>=3.0",
-]
 airflow = [
   "apache-airflow[postgres,google,snowflake,http]>=2.7",
   "apache-airflow-providers-google>=9.0",
-  "apache-airflow-providers-snowflake>=3.0",
 ]
 visualization = [
   "looker-sdk>=1.2",
@@ -44,6 +40,7 @@ visualization = [
 ]
 dev = [
   "pytest>=7.0",
+  "pytest-cov>=6",
   "black>=23.3.0",
   "flake8>=6.0",
 ]
