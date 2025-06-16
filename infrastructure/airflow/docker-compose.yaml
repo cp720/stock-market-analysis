@@ -14,7 +14,9 @@ services:
       - "6379:6379"
 
   airflow-webserver:
-    image: apache/airflow:2.9.1-python3.11
+    build:
+      context: ../..
+      dockerfile: infrastructure/airflow/Dockerfile
     depends_on:
       - postgres
       - redis
@@ -26,19 +28,21 @@ services:
       AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
       AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
       AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
-      PYTHONPATH: /opt/airflow/dags:/opt/airflow/src
+      #PYTHONPATH: /opt/airflow/dags:/opt/airflow/src
     volumes:
       - ../../dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ./keys:/opt/airflow/keys
-      - ../../src:/opt/airflow/src
+      #- ../../src:/opt/airflow/src
     ports:
       - "8080:8080"
     command: webserver
 
   airflow-scheduler:
-    image: apache/airflow:2.9.1-python3.11
+    build:
+      context: ../..
+      dockerfile: infrastructure/airflow/Dockerfile
     depends_on:
       - airflow-webserver
     environment:
@@ -49,14 +53,16 @@ services:
       AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
       AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
       AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
-      PYTHONPATH: /opt/airflow/dags:/opt/airflow/src
+      #PYTHONPATH: /opt/airflow/dags:/opt/airflow/src
     volumes:
       - ../../dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ./keys:/opt/airflow/keys
-      - ../../src:/opt/airflow/src
+      #- ../../src:/opt/airflow/src
     command: scheduler
 
 volumes:
   logs_postgres:
+  logs_volume:
+  plugins_volume:

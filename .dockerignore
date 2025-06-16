@@ -1,0 +1,16 @@
+# ignore Airflow logs
+infrastructure/airflow/logs
+infrastructure/airflow/logs/**
+
+# ignore any egg-info generated locally
+**/*.egg-info
+
+# python artifacts
+**/__pycache__
+**/*.pyc
+
+# virtualenv / git
+.venv
+venv
+.git
+.gitignore

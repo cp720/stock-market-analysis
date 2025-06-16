@@ -28,6 +28,11 @@ dependencies = [
   "google-cloud-bigquery>=3.6",
   "google-auth-oauthlib>=0.7.0",
 ]
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
 
 [project.optional-dependencies]
 airflow = [
