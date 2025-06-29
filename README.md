@@ -36,13 +36,14 @@ This project aims to provide a simple starting point for analyzing publicly trad
    source .venv/bin/activate  # On Windows use `.\.venv\Scripts\activate`
    ```
 3. **Install dependencies**
-  '''bash
+
+  ```bash
   python -m venv .venv
   source .venv/bin/activate      # Windows: .venv\Scripts\activate
   pip install -r requirements.txt
- '''
+ ```
 
-5. **Set up your FMP API key**. Either export an environment variable or create a `.env` file:
+4. **Set up your FMP API key**. Either export an environment variable or create a `.env` file:
    ```bash
    export FMP_API_KEY=<your_key>
    ```
