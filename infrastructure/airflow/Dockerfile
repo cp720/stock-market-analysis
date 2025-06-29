@@ -4,17 +4,19 @@ FROM apache/airflow:2.9.1-python3.11
 USER root
 WORKDIR /opt/airflow
 
-# Bring in only what's needed for pip install
-COPY pyproject.toml README.md /opt/airflow/
-COPY src/                       /opt/airflow/src/
+# Copy and install pinned dependencies
+COPY requirements.txt /opt/airflow/requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+ && pip install --no-cache-dir -r requirements.txt
 
-# Give the airflow user ownership of the src/ tree
+# Bring in project code
+COPY src/ /opt/airflow/src/
+
+# Give airflow user ownership of code tree
 RUN chown -R airflow /opt/airflow/src
 
 USER airflow
 
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
-
-# Now install pip & your package in editable mode
-RUN pip install --no-cache-dir --upgrade pip \
- && pip install -e ".[airflow]"
+# Ensure package is on the Python path so imports like
+# `from stock_market_analysis.pipeline import ...` work
+ENV PYTHONPATH=/opt/airflow/src

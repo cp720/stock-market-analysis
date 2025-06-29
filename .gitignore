@@ -175,3 +175,4 @@ cython_debug/
 
 # airflow logs
 infrastructure/airflow/logs/
+infrastructure/airflow/keys/*.json

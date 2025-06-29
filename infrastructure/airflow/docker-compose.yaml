@@ -20,6 +20,8 @@ services:
     depends_on:
       - postgres
       - redis
+    env_file:
+      - ../../.env
     environment:
       AIRFLOW__CORE__EXECUTOR: CeleryExecutor
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -28,12 +30,13 @@ services:
       AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
       AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
       AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
+      GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/keys/airflow-bq-key.json
       #PYTHONPATH: /opt/airflow/dags:/opt/airflow/src
     volumes:
       - ../../dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
-      - ./keys:/opt/airflow/keys
+      - ./keys:/opt/airflow/keys:ro
       #- ../../src:/opt/airflow/src
     ports:
       - "8080:8080"
@@ -45,6 +48,8 @@ services:
       dockerfile: infrastructure/airflow/Dockerfile
     depends_on:
       - airflow-webserver
+    env_file:
+      - ../../.env
     environment:
       AIRFLOW__CORE__EXECUTOR: CeleryExecutor
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -53,14 +58,44 @@ services:
       AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
       AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
       AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
+      GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/keys/airflow-bq-key.json
       #PYTHONPATH: /opt/airflow/dags:/opt/airflow/src
     volumes:
       - ../../dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
-      - ./keys:/opt/airflow/keys
+      - ./keys:/opt/airflow/keys:ro
       #- ../../src:/opt/airflow/src
     command: scheduler
+
+  airflow-worker:
+    build:
+      context: ../..
+      dockerfile: infrastructure/airflow/Dockerfile
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - ../../.env
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+      AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
+      AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
+      GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/keys/airflow-bq-key.json
+      # If you have custom code under src/, uncomment the next line:
+      # AIRFLOW__CORE__PYTHONPATH: /opt/airflow/src
+    volumes:
+      - ../../dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./keys:/opt/airflow/keys:ro
+      - ../../src:/opt/airflow/src
+    command: celery worker
+
 
 volumes:
   logs_postgres:
