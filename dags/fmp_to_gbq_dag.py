@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
+
 from stock_market_analysis.pipeline import fetch_process_upload
 
 default_args = {

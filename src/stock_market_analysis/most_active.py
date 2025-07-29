@@ -10,6 +10,7 @@ from google.cloud import bigquery
 
 logger = logging.getLogger(__name__)
 
+
 def _get_base_url() -> str | None:
     """Return the API URL"""
     load_dotenv()
