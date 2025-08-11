@@ -7,19 +7,50 @@ services:
       POSTGRES_DB: airflow
     volumes:
       - logs_postgres:/var/lib/postgresql/data
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   redis:
     image: redis:6
     ports:
       - "6379:6379"
-
+  airflow-init:
+    build:
+      context: ../..
+      dockerfile: infrastructure/airflow/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - ../../.env
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create
+        --username admin
+        --firstname Admin
+        --lastname User
+        --role Admin
+        --email admin@example.com
+        --password admin || true
+      "
   airflow-webserver:
     build:
       context: ../..
       dockerfile: infrastructure/airflow/Dockerfile
     depends_on:
-      - postgres
-      - redis
+      airflow-init:
+        condition: service_completed_successfully
     env_file:
       - ../../.env
     environment:
@@ -31,6 +62,7 @@ services:
       AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
       AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
       GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/keys/airflow-bq-key.json
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
       #PYTHONPATH: /opt/airflow/dags:/opt/airflow/src
     volumes:
       - ../../dags:/opt/airflow/dags
@@ -47,7 +79,8 @@ services:
       context: ../..
       dockerfile: infrastructure/airflow/Dockerfile
     depends_on:
-      - airflow-webserver
+      airflow-init:
+        condition: service_completed_successfully
     env_file:
       - ../../.env
     environment:
@@ -59,6 +92,7 @@ services:
       AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
       AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
       GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/keys/airflow-bq-key.json
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
       #PYTHONPATH: /opt/airflow/dags:/opt/airflow/src
     volumes:
       - ../../dags:/opt/airflow/dags
@@ -73,8 +107,8 @@ services:
       context: ../..
       dockerfile: infrastructure/airflow/Dockerfile
     depends_on:
-      - redis
-      - postgres
+      airflow-init:
+        condition: service_completed_successfully
     env_file:
       - ../../.env
     environment:
@@ -86,6 +120,7 @@ services:
       AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
       AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
       GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/keys/airflow-bq-key.json
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
       # If you have custom code under src/, uncomment the next line:
       # AIRFLOW__CORE__PYTHONPATH: /opt/airflow/src
     volumes:
@@ -94,7 +129,7 @@ services:
       - ./plugins:/opt/airflow/plugins
       - ./keys:/opt/airflow/keys:ro
       - ../../src:/opt/airflow/src
-    command: celery worker
+    command: ["airflow", "celery", "worker"]
 
 
 volumes:

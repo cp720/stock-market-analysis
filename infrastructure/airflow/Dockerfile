@@ -1,22 +1,22 @@
-# infrastructure/airflow/Dockerfile
 FROM apache/airflow:2.9.1-python3.11
+
 
 USER root
 WORKDIR /opt/airflow
 
-# Copy and install pinned dependencies
-COPY requirements.txt /opt/airflow/requirements.txt
-RUN pip install --no-cache-dir --upgrade pip \
- && pip install --no-cache-dir -r requirements.txt
-
-# Bring in project code
+# Bring in project code and set ownership
 COPY src/ /opt/airflow/src/
+RUN chown -R airflow:0 /opt/airflow/src
 
-# Give airflow user ownership of code tree
-RUN chown -R airflow /opt/airflow/src
+# Copy requirements
+COPY requirements.txt /tmp/requirements.txt
 
+# Switch to airflow
 USER airflow
 
-# Ensure package is on the Python path so imports like
-# `from stock_market_analysis.pipeline import ...` work
+# Install Python deps as airflow user
+RUN pip install --no-cache-dir --upgrade pip \
+ && pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Keep PYTHONPATH
 ENV PYTHONPATH=/opt/airflow/src

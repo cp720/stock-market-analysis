@@ -1,3 +1,5 @@
+--constraint https://raw.githubusercontent.com/apache/airflow/constraints-2.9.1/constraints-3.11.txt
+
 # core dependencies from pyproject.toml
 requests>=2.28
 pandas>=1.5
@@ -6,8 +8,7 @@ python-dotenv>=1.0
 google-cloud-bigquery>=3.6
 google-auth-oauthlib>=0.7.0
 
-# pin Airflow to a 2.x release that supports Python 3.11
-apache-airflow[postgres,google,snowflake,http]==2.6.3
-
-# tell pip to use the matching constraints file for 3.11
--c https://raw.githubusercontent.com/apache/airflow/constraints-2.6.3/constraints-3.11.txt
+# Airflow providers
+apache-airflow-providers-google
+apache-airflow-providers-postgres
+apache-airflow-providers-http
